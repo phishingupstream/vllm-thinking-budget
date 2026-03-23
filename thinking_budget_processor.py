@@ -138,12 +138,17 @@ class ThinkingBudgetLogitsProcessor(LogitsProcessor):
     ) -> None:
         self.device = device
 
-        # Resolve token IDs from the model's tokenizer
+        # Resolve token IDs from vLLM's already-loaded cached tokenizer.
+        # This avoids loading a duplicate tokenizer into CPU RAM and
+        # eliminates redundant disk I/O at startup.
         model_name = vllm_config.model_config.model
-        from transformers import AutoTokenizer
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_name, trust_remote_code=True
-        )
+        try:
+            from vllm.transformers_utils.tokenizer import (
+                cached_tokenizer_from_config,
+            )
+        except ImportError:
+            from vllm.tokenizers import cached_tokenizer_from_config
+        tokenizer = cached_tokenizer_from_config(vllm_config.model_config)
         self.think_start_id = tokenizer.convert_tokens_to_ids("<think>")
         self.think_end_id = tokenizer.convert_tokens_to_ids("</think>")
         self.nl_id = tokenizer.encode("\n", add_special_tokens=False)[0]
