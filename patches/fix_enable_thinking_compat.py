@@ -114,8 +114,9 @@ new_validator = '''    # [PATCH] reasoning_effort compat
             if ef_budget is not None and "max_thinking_tokens" not in xargs:
                 xargs["max_thinking_tokens"] = ef_budget
 
-        # Merge explicit enable_thinking (highest precedence)
-        if enable is not None and "enable_thinking" not in ctk:
+        # Merge explicit enable_thinking (highest precedence — overrides
+        # both reasoning_effort and pre-existing chat_template_kwargs)
+        if enable is not None:
             ctk["enable_thinking"] = enable
 
         # If thinking is enabled but no budget was set (e.g. Anthropic client

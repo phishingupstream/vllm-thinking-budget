@@ -52,7 +52,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("vllm.thinking_budget")
 
-# Number of prompt tail tokens to scan for <think>/<think> state detection.
+# Number of prompt tail tokens to scan for <think>/</think> state detection.
 # Must cover the assistant prefix tokens (e.g. Qwen3.5: <|im_start|>assistant\n<think>\n)
 _PROMPT_TAIL_SCAN = 8
 
@@ -76,14 +76,13 @@ class RequestState:
         Cumulative: thinking_token_count never resets on new <think> blocks.
         After forced_stop, no further state changes are made.
         """
-        if self.forced_stop:
-            return
-
         tokens = self.output_token_ids
         end = len(tokens)
 
         # Handle speculative decode token rejection: if vLLM truncated
         # output_token_ids (rejected speculative tokens), rescan from scratch.
+        # Must check this BEFORE the forced_stop early return, because the
+        # token that triggered forced_stop may itself have been rejected.
         if self.last_scanned > end:
             logger.debug(
                 "output_token_ids shrank from %d to %d, rescanning",
@@ -91,8 +90,12 @@ class RequestState:
             )
             self.last_scanned = 0
             self.thinking_token_count = 0
+            self.forced_stop = False
             # Restore initial prompt prefix state before rescanning output
             self.in_thinking = self.starts_in_thinking
+
+        if self.forced_stop:
+            return
 
         for i in range(self.last_scanned, end):
             tid = tokens[i]

@@ -310,7 +310,7 @@ def main():
         "--step",
         type=int,
         default=None,
-        help="Run specific step (0-5). Default: run all.",
+        help="Run specific step (0,1,2,3,5). Default: run all.",
     )
     parser.add_argument(
         "--output",
@@ -329,7 +329,8 @@ def main():
         sys.exit(1)
 
     all_results = []
-    steps = range(6) if args.step is None else [args.step]
+    available_steps = [0, 1, 2, 3, 5]
+    steps = available_steps if args.step is None else [args.step]
 
     for step in steps:
         if step == 0:
