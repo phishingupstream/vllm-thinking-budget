@@ -85,7 +85,7 @@ new_return = """        # [PATCH] anthropic thinking compat: map thinking config
             if thinking_type == 'enabled':
                 enable_thinking = True
                 budget = thinking.get('budget_tokens')
-                max_tok = anthropic_request.max_tokens or 0
+                max_tok = anthropic_request.max_tokens or float('inf')
                 # Anthropic clients set budget_tokens = max_tokens - 1 to mean
                 # "no cap" (thinking counts against max_tokens in Anthropic API).
                 # In vLLM, max_thinking_tokens is a separate cap, so passing

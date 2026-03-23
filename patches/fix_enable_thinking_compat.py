@@ -22,7 +22,6 @@ Fix:
 
     Precedence: explicit enable_thinking > reasoning_effort > chat_template_kwargs
 """
-import re
 
 file_path = "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/chat_completion/protocol.py"
 
